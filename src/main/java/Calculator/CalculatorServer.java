@@ -1,28 +1,23 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package Calculator;
 
 /**
  *
  * @author thilakshihansini
  */
-import java.rmi.Naming;
-//import java.rmi.RemoteException;
+
+//import packages
 import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
 
 public class CalculatorServer {
     public static void main(String[] args) {
         try {
-            LocateRegistry.createRegistry(1105); // Create RMI registry on port 1105
-            CalculatorImplementation calc = new CalculatorImplementation();
-            Naming.rebind("CalculatorService", calc);
-            System.out.println("Calculator Server is up and running...");
+            Calculator calculator = new CalculatorImplementation();
+            Registry registry = LocateRegistry.createRegistry(3008);//Create RMI registry on port 3008
+            registry.rebind("CalculatorService", calculator);
+            System.out.println("Calculator Server is running...");
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 }
-
-

@@ -1,26 +1,19 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package Calculator;
 
 /**
  *
  * @author thilakshihansini
  */
-import java.rmi.RemoteException;
+
+//import packages
 import java.rmi.server.UnicastRemoteObject;
+import java.rmi.RemoteException;
 import java.util.Stack;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.stream.Collectors;
 
 public class CalculatorImplementation extends UnicastRemoteObject implements Calculator {
-    private static final long serialVersionUID = 1L;
     private Stack<Integer> stack;
 
-    public CalculatorImplementation() throws RemoteException {
+    protected CalculatorImplementation() throws RemoteException {
         stack = new Stack<>();
     }
 
@@ -31,34 +24,29 @@ public class CalculatorImplementation extends UnicastRemoteObject implements Cal
 
     @Override
     public synchronized void pushOperation(String operator) throws RemoteException {
-        List<Integer> values = new ArrayList<>();
-        while (!stack.isEmpty()) {
-            values.add(stack.pop());
-        }
-
+        int result;
         switch (operator) {
             case "min":
-                stack.push(Collections.min(values));
+                result = stack.stream().min(Integer::compare).get();
                 break;
             case "max":
-                stack.push(Collections.max(values));
+                result = stack.stream().max(Integer::compare).get();
                 break;
             case "lcm":
-                stack.push(lcm(values));
+                result = lcm(stack);
                 break;
             case "gcd":
-                stack.push(gcd(values));
+                result = gcd(stack);
                 break;
             default:
-                throw new IllegalArgumentException("Unsupported operator: " + operator);
+                throw new IllegalArgumentException("Invalid operator");
         }
+        stack.clear();
+        stack.push(result);
     }
 
     @Override
     public synchronized int pop() throws RemoteException {
-        if (stack.isEmpty()) {
-            throw new RemoteException("Stack is empty.");
-        }
         return stack.pop();
     }
 
@@ -73,31 +61,23 @@ public class CalculatorImplementation extends UnicastRemoteObject implements Cal
             Thread.sleep(millis);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            throw new RemoteException("Thread interrupted during delay", e);
         }
         return pop();
     }
 
-    private int gcd(List<Integer> values) {
-        return values.stream().reduce(this::gcd).orElseThrow(IllegalArgumentException::new);
+    private int gcd(Stack<Integer> stack) {
+        return stack.stream().reduce(this::gcd).get();
     }
 
     private int gcd(int a, int b) {
-        while (b != 0) {
-            int temp = b;
-            b = a % b;
-            a = temp;
-        }
-        return a;
+        return b == 0 ? a : gcd(b, a % b);
     }
 
-    private int lcm(List<Integer> values) {
-        return values.stream().reduce(this::lcm).orElseThrow(IllegalArgumentException::new);
+    private int lcm(Stack<Integer> stack) {
+        return stack.stream().reduce(1, this::lcm);
     }
 
     private int lcm(int a, int b) {
-        return Math.abs(a * b) / gcd(a, b);
+        return (a * b) / gcd(a, b);
     }
 }
-
-
